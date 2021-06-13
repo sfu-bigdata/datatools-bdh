@@ -8,4 +8,5 @@ setup(name='datatools_bdh',
       author_email='bdi-consulting@sfu.ca',
       license='MIT',
       packages=['datatools_bdh'],
+      package_data={'': ['*.csv']},
       zip_safe=False)
