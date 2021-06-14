@@ -8,7 +8,7 @@ import datatools_bdh.pccf as pccf
 The use the conversion dataframe either via:
 `pccf.df`
 or via
-`pccf.pccf_df()`
+`pccf._pccf_df()`
 """
 
 from datatools_bdh import _get_resource_path
@@ -17,11 +17,11 @@ import pandas as pd
 _rldf = None
 _pccf_df = None
 
-def pccf_df():
+def _pccf_df():
     return _pccf_df
 
 def __getattr__(name):
-    if name == 'rl':
+    if name == 'rldf':
         return _rldf
     if name == 'df':
         return _pccf_df
@@ -57,3 +57,13 @@ def init(filename):
     # lat/lon as floating point (N type in record layout)
     _pccf_df["LAT"] = _pccf_df["LAT"].astype(float)
     _pccf_df["LONG"] = _pccf_df["LONG"].astype(float)
+
+def filter_pc(province_filter=None, keep_first_pc=True, drop_da0=True):
+    """Remove items from PCCF data frame."""
+    global _pccf_df
+    if not province_filter is None:
+        _pccf_df = _pccf_df.loc[_pccf_df['Postal code'].str[0] == province_filter]
+    if drop_da0:
+        _pccf_df = _pccf_df.loc[_pccf_df['DAuid'] != '00000000']
+    if keep_first_pc:
+        _pccf_df = _pccf_df.groupby('Postal code').first()

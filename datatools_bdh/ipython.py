@@ -8,17 +8,22 @@ def displaymd(strmd):
     """Display Markdown in notebook"""
     display(Markdown(strmd))
 
-@register_line_magic
-def markdown(line):
-    """ %markdown line magic to display formatted markdown within a Python cell
+try:
+    get_ipython
 
-    Examples:
-    %markdown ## City: Burnaby
-    %markdown { f"Number of 6-digit postal codes: {burnaby_pcs.size}" }
-    """
-    displaymd(line)
-del markdown
+    @register_line_magic
+    def markdown(line):
+        """ %markdown line magic to display formatted markdown within a Python cell
 
+        Examples:
+        %markdown ## City: Burnaby
+        %markdown { f"Number of 6-digit postal codes: {burnaby_pcs.size}" }
+        """
+        displaymd(line)
+    del markdown
+
+except NameError:
+    pass
 
 def display_full_df(df, max_rows=None, max_columns=None):
     import pandas as pd
