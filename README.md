@@ -11,6 +11,7 @@ The modules in this package mostly provide additional helper functions to work w
 | `ipython` | Utilities to work with IPython and some Pandas  |
 | `pccf` | Working with Canadian postal codes via the Stats Can Postal code conversion file |
 | `data_uri` | Generate Data URIs |
+| `mdocx` | Generate .docx report using markdown |
 
 ## Installation
 

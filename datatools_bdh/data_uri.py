@@ -17,6 +17,12 @@ def bytes_to_uri(data, imgtype='jpeg', mimeprefix='image'):
         data64 = base64.b64encode(data)
     return u'data:'+mimeprefix+'/'+imgtype+';base64,'+data64.decode('utf-8')
 
+def data_uri_to_bytes(data_uri):
+    from urllib.request import urlopen
+    with urlopen(data_uri) as response:
+        data = response.read()
+    return data
+
 def savefig_uri(**kwargs):
     """Save current figure into data URI.
        Example: savefig_uri(format='png', transparent=True)
