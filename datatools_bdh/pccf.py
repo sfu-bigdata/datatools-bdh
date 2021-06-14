@@ -66,4 +66,4 @@ def filter_pc(province_filter=None, keep_first_pc=True, drop_da0=True):
     if drop_da0:
         _pccf_df = _pccf_df.loc[_pccf_df['DAuid'] != '00000000']
     if keep_first_pc:
-        _pccf_df = _pccf_df.groupby('Postal code').first()
+        _pccf_df = _pccf_df.groupby('Postal code').first().reset_index()
