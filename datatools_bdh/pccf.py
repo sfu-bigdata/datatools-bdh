@@ -67,3 +67,11 @@ def filter_pc(province_filter=None, keep_first_pc=True, drop_da0=True):
         _pccf_df = _pccf_df.loc[_pccf_df['DAuid'] != '00000000']
     if keep_first_pc:
         _pccf_df = _pccf_df.groupby('Postal code').first().reset_index()
+
+def get_community_codes(community, field="DAuid"):
+    """Get DA codes for given community or city.
+    Args:
+        community - city name
+        field - "DAuid" or "Postal code" or "FSA"
+    """
+    return _pccf_df.loc[_pccf_df['Community'] == community, field].unique()

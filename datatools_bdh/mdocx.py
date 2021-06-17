@@ -15,39 +15,42 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt, Cm
 import mistune
 
-class MathBlockGrammar(mistune.BlockGrammar):
+class MathBlockGrammar(mistune.BlockParser):
     block_math = re.compile(r"^\$\$(.*?)\$\$", re.DOTALL)
 
 
-class MathBlockLexer(mistune.BlockLexer):
-    default_rules = ['block_math'] + mistune.BlockLexer.default_rules
+# class MathBlockLexer(mistune.BlockLexer):
+#     default_rules = ['block_math'] + mistune.BlockLexer.default_rules
 
-    def __init__(self, rules=None, **kwargs):
-        if rules is None:
-            rules = MathBlockGrammar()
-        super(MathBlockLexer, self).__init__(rules, **kwargs)
+#     def __init__(self, rules=None, **kwargs):
+#         if rules is None:
+#             rules = MathBlockGrammar()
+#         super(MathBlockLexer, self).__init__(rules, **kwargs)
 
-    def parse_block_math(self, m):
-        """Parse a $$math$$ block"""
-        self.tokens.append({'type': 'block_math', 'text': m.group(1)})
+#     def parse_block_math(self, m):
+#         """Parse a $$math$$ block"""
+#         self.tokens.append({'type': 'block_math', 'text': m.group(1)})
 
 
 class MarkdownWithMath(mistune.Markdown):
     def __init__(self, renderer, **kwargs):
-        kwargs['block'] = MathBlockLexer
+        #kwargs['block'] = MathBlockLexer
         super(MarkdownWithMath, self).__init__(renderer, **kwargs)
 
     def output_block_math(self):
         return self.renderer.block_math(self.token['text'])
 
 
-class PythonDocxRenderer(mistune.Renderer):
+class PythonDocxRenderer(mistune.renderers.BaseRenderer):
     def __init__(self, **kwds):
         super(PythonDocxRenderer, self).__init__(**kwds)
         self.table_memory = []
         self.img_counter = 0
 
-    def header(self, text, level, raw):
+    def header(self, text, level):
+        return "p = document.add_heading('', %d)\n" % (level - 1) + text
+
+    def heading(self, text, level):
         return "p = document.add_heading('', %d)\n" % (level - 1) + text
 
     def paragraph(self, text):
@@ -85,6 +88,9 @@ class PythonDocxRenderer(mistune.Renderer):
     def text(self, text):
         return "p.add_run(\"\"\"%s\"\"\")\n" % text
 
+    def escape(self, text):
+        return "p.add_run(\"\"\"%s\"\"\")\n" % text
+
     def emphasis(self, text):
         return text[:-1] + '.italic = True\n'
 
@@ -93,7 +99,7 @@ class PythonDocxRenderer(mistune.Renderer):
 
     def block_code(self, code, language):
         code = code.replace('\n', '\\n')
-        return "p = document.add_paragraph()\np.add_run(\"%s\")\np.style = 'BasicUserQuote'\np.add_run().add_break()\n" % code
+        return "p = document.add_paragraph()\np.add_run(\"\"\"%s\"\"\")\np.style = 'BasicUserQuote'\np.add_run().add_break()\n" % code
 
     def link(self, link, title, content):
         return "%s (%s)" % (content, link)
@@ -128,6 +134,12 @@ class PythonDocxRenderer(mistune.Renderer):
         self.img_counter = self.img_counter + 1
         sympy.preview(r'$$%s$$' % text, output='png', viewer='file', filename=filename, euler=False)
         return self.image(filename, None, "Equation " + str(self.img_counter - 1))
+
+    def newline(self):
+        return "\n"
+
+    def finalize(self, data):
+        return ''.join(data)
 
 # ----------------------------------------------------------------------------
 class MarkdownDocumentBase:

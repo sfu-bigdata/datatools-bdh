@@ -9,7 +9,7 @@ def displaymd(strmd):
     display(Markdown(strmd))
 
 try:
-    get_ipython
+    get_ipython # raise NameError if we're not in IPython
 
     @register_line_magic
     def markdown(line):
@@ -22,6 +22,11 @@ try:
         displaymd(line)
     del markdown
 
+    def insert_pagebreak():
+        """Insert a pagebreak that renders invisibly in HTML, but shows in PDF and 
+        can be utilized in .docx generation"""
+        displaymd('<div style="page-break-after: always;"></div>')
+
 except NameError:
     pass
 
@@ -32,7 +37,29 @@ def display_full_df(df, max_rows=None, max_columns=None):
                            'display.max_colwidth', -1):
         display(df)
 
-# TODO: Sort out the following buggy behaviour
+from io import StringIO 
+import sys
+
+class Capturing(list):
+    """Capture stdout and stderr as context manager.
+    See: https://stackoverflow.com/a/16571630/15377900
+    """
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = StringIO()
+        self._stderr = sys.stderr
+        sys.stderr = self._stringioe = StringIO()
+        return self
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        self.extend(self._stringioe.getvalue().splitlines())
+        sys.stdout = self._stdout
+        sys.stderr = self._stderr
+        del self._stringio    # free up some memory
+        del self._stringioe
+
+
+# TODO: Sort out the following buggy behaviour of the %markdown magic above
 #
 # `%markdown {f"hello {42}"}``
 # Should result in:
