@@ -3,6 +3,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import warnings
+from .data_uri import bytes_to_uri
+from .ipython import render_uri
+import io
 
 def get_axis_bounds(ax=None):
     """Obtain bounds of axis in format compatible with ipyleaflet"""
@@ -23,3 +26,10 @@ def set_xticklabels_nowarn(ax, xticks=None, autoscale=1000, suffix="k"):
         xticks = pd.Series(ax.get_xticks()/autoscale).astype(int).astype(str) + suffix
     with warnings.catch_warnings(record=True) as w:
         ax.set_xticklabels(xticks)
+
+def savefig_uri(**kwargs):
+    """Save current figure into data URI.
+       Example: savefig_uri(format='png', transparent=True)
+    """
+    f = lambda buf: plt.savefig(buf, **kwargs)
+    return render_uri(f, format=kwargs.get('format', 'png'))

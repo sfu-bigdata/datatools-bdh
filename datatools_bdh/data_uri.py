@@ -1,4 +1,4 @@
-import io, base64
+import base64
 
 # --- local imports in functions
 # import matplotlib.pyplot as plt
@@ -22,13 +22,3 @@ def data_uri_to_bytes(data_uri):
     with urlopen(data_uri) as response:
         data = response.read()
     return data
-
-def savefig_uri(**kwargs):
-    """Save current figure into data URI.
-       Example: savefig_uri(format='png', transparent=True)
-    """
-    import matplotlib.pyplot as plt
-    buf = io.BytesIO()
-    plt.savefig(buf, **kwargs)
-    buf.seek(0)
-    return bytes_to_uri(buf)
