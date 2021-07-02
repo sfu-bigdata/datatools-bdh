@@ -7,13 +7,19 @@ import tabulate
 import io
 from .data_uri import bytes_to_uri
 
+# ---------------------------------------------------------------------------
+
 def displaymd(strmd):
     """Display Markdown in notebook"""
     display(Markdown(strmd))
 
+# ---------------------------------------------------------------------------
+# rendering to bytes buffer, PIL image and HTML image via data URI
+
 def render_bytes(f):
     """Call f(buf) and contruct a BytesIO buf object.
        Example: render_bytes(f=lambda buf: plt.savefig(buf))
+       Returns: buf io.BytesIO object
     """
     buf = io.BytesIO()
     f(buf)
@@ -32,6 +38,41 @@ def render_uri(f, **kwargs):
     """
     return render_bytes_to_uri(render_bytes(f), **kwargs)
 
+def image_to_bytes(dfi, format='PNG'):
+    "PIL image dfi converted to bytes by saving as given format (default: PNG)."
+    return render_bytes( lambda buf: dfi.save(buf, format=format) )
+
+def bytes_to_ipy_image(buf, **kwargs):
+    """Create IPython Image from Bytes array
+    Args:
+      buf - image data either as io.BytesIO python bytes object
+      kwargs - further arguments given to IPython.display.Image
+    Returns:
+      Image instance
+    """
+    from IPython.display import Image
+    try:
+        data = buf.getvalue()
+    except AttributeError:
+        data = buf
+    return Image(data=data, **kwargs)
+
+def pil_to_ipy_image(pil_image, **kwargs):
+    "Create IPython Image from PIL Image"
+    buf = image_to_bytes(pil_image)
+    return bytes_to_ipy_image(buf, **kwargs)
+
+plotly_fig_opts = dict(width=600, height=350, scale=2)
+
+def plotly_fig_to_ipy_image(fig, **kwargs):
+    fig_opts = plotly_fig_opts.copy()
+    fig_opts.update(kwargs)
+    img_bytes = fig.to_image(format="png", **fig_opts)
+    return bytes_to_ipy_image(img_bytes)
+
+# ---------------------------------------------------------------------------
+# dataframe to image conversion
+
 def dataframe_to_bytes(df):
     """Render formatted dataframe HTML to png and return a BytesIO buffer"""
     import dataframe_image as dfi
@@ -43,20 +84,6 @@ def dataframe_to_pil_image(df):
     from PIL import Image
     buf = dataframe_to_bytes(df)
     return Image.open(buf)
-
-def image_to_bytes(dfi, format='PNG'):
-    "PIL image dfi converted to bytes by saving as given format (default: PNG)."
-    return render_bytes( lambda buf: dfi.save(buf, format=format) )
-
-def bytes_to_ipy_image(buf, **kwargs):
-    "Create IPython Image from Bytes array"
-    from IPython.display import Image
-    return Image(data=buf.getvalue(), **kwargs)
-
-def pil_to_ipy_image(pil_image, **kwargs):
-    "Create IPython Image from PIL Image"
-    buf = image_to_bytes(pil_image)
-    return bytes_to_ipy_image(buf, **kwargs)
 
 def dataframe_to_ipy_image(df, f=None, **kwargs):
     """Create IPython Image from PIL Image.
@@ -72,10 +99,22 @@ def dataframe_to_ipy_image(df, f=None, **kwargs):
 
 def dataframe_uri(df):
     """Render formatted dataframe HTML to png and return as data URI"""
-    return render_uri(dataframe_to_bytes(df))
+    return render_bytes_to_uri(dataframe_to_bytes(df))
 
 def display_df_image(df):
     displaymd(f"![]({dataframe_uri(df)})")
+
+# ---------------------------------------------------------------------------
+def conda_bin_path_fix():
+    """Adjust OS system PATH to agree with conda environment of Jupyter kernel."""
+    import sys, os
+    envpath = os.path.dirname(sys.executable)
+    if envpath not in os.environ['PATH']:
+        #print(f"Adding {envpath} to PATH")
+        os.environ['PATH'] =  envpath + os.pathsep + os.environ['PATH']
+
+# ---------------------------------------------------------------------------
+# pagebreak function
 
 def insert_pagebreak():
     """Insert a pagebreak that renders invisibly in HTML, but shows in PDF and 
@@ -101,6 +140,9 @@ try:
         displaymd(line)
     del markdown
 
+    # auto-apply the conda env bin path adjustment
+    conda_bin_path_fix()
+
 except NameError:
     pass
 
@@ -112,7 +154,25 @@ def display_full_df(df, max_rows=None, max_columns=None):
         display(df)
 
 # ---------------------------------------------------------------------------
-# table display related
+# sparklines
+
+ticks = u'▁▁▂▃▄▅▆▇█'
+
+def spark_string(ints, fit_min=False):
+    """Returns a spark string from given iterable of ints.
+    
+    Keyword Arguments:
+    fit_min: Matches the range of the sparkline to the input integers
+             rather than the default of zero. Useful for large numbers with
+             relatively small differences between the positions
+    """
+    min_range = min(ints) if fit_min else 0
+    step_range = max(ints) - min_range
+    step = (step_range / float(len(ticks) - 1)) or 1
+    return u''.join(ticks[int(round((i - min_range) / step))] for i in ints)
+
+# ---------------------------------------------------------------------------
+# table display
 
 def tree_to_HTML(tree):
     import lxml.etree as et
@@ -158,6 +218,9 @@ def make_html_table(table):
         generated safely.
     """
     return tabulate.tabulate(table, tablefmt='unsafehtml')
+
+# ---------------------------------------------------------------------------
+# Capture warnings (python generic, not ipython related)
 
 from io import StringIO 
 import sys

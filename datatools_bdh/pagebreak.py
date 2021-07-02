@@ -6,8 +6,12 @@ A pandoc filter that converts certain HTML div tags into docx pagebreaks.
 
 """
 
-from pandocfilters import toJSONFilter, Str, Para, RawBlock
+from pandocfilters import toJSONFilter, Str, Para, RawBlock, Image
 import re
+
+# import debugpy
+# debugpy.listen(("localhost", 5678))
+# debugpy.wait_for_client()
 
 # Below is the secret sauce, originating from a Haskell script in https://github.com/alexstoick/pandoc-docx-pagebreak
 pagegBreakLandscapeXml = "<w:p><w:pPr><w:sectPr> <w:pgSz w:w=\"15840\" w:h=\"12240\"  w:orient=\"landscape\" /></w:sectPr></w:pPr></w:p>"
@@ -41,6 +45,9 @@ def pagebreak(key, value, format, meta):
         return write_pb(landscape=False)
       elif re.search(r'page-break-landscape-after *: *always', kvd['style']):
         return write_pb(landscape=True)
+    elif key == 'Image':
+      [[ident, classes, kvs], something, contents] = value
+      return Image([ident, classes, kvs], something, contents)
   except KeyError:
     pass
 

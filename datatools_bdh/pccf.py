@@ -27,36 +27,51 @@ def __getattr__(name):
         return _pccf_df
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
-def init(filename):
+import pickle, os
+
+def init(filename, cachefile=None):
     """Load the raw 2020 Postal code conversion file from given `filename`
        Call this with the location of pccfNat_fccpNat_082020.txt
     """
     global _pccf_df, _rldf
 
-    _rldf = pd.read_csv(_get_resource_path('pccf_2020_record_layout.csv'))
+    if not cachefile is None and os.path.exists(cachefile):
+        try:
+            with open(cachefile, "rb") as fh:
+                d = pickle.load(fh)
+                globals().update(d)
+        except EOFError:
+            init(filename, cachefile=None)
+            pass
+    else:
+        _rldf = pd.read_csv(_get_resource_path('pccf_2020_record_layout.csv'))
 
-    # load the raw text pccf file
-    with open(filename,'r', encoding='latin-1') as fh:
-        pctxt = fh.read()
+        # load the raw text pccf file
+        with open(filename,'r', encoding='latin-1') as fh:
+            pctxt = fh.read()
 
-    pclines = pctxt.split('\n')
+        pclines = pctxt.split('\n')
 
-    pclines = list(filter(lambda l: len(l), pclines)) # keep only non-empty lines
-    pcs = pd.Series(pclines)
+        pclines = list(filter(lambda l: len(l), pclines)) # keep only non-empty lines
+        pcs = pd.Series(pclines)
 
-    def gen_pccf():
-        for idx, r in _rldf.iterrows():
-            yield r['Field name'], pcs.str[r['Position']-1:r['Position']+r['Size']-1]
-            
-    _pccf_df = pd.DataFrame(dict(gen_pccf()))
+        def gen_pccf():
+            for idx, r in _rldf.iterrows():
+                yield r['Field name'], pcs.str[r['Position']-1:r['Position']+r['Size']-1]
+                
+        _pccf_df = pd.DataFrame(dict(gen_pccf()))
 
-    # remove whitespace around string fields
-    _pccf_df["Comm_Name"] = _pccf_df["Comm_Name"].str.strip()
-    _pccf_df["Community"] = _pccf_df["Comm_Name"].str.replace("-"," ").str.title()
-    _pccf_df["CSDname"] = _pccf_df["CSDname"].str.strip()
-    # lat/lon as floating point (N type in record layout)
-    _pccf_df["LAT"] = _pccf_df["LAT"].astype(float)
-    _pccf_df["LONG"] = _pccf_df["LONG"].astype(float)
+        # remove whitespace around string fields
+        _pccf_df["Comm_Name"] = _pccf_df["Comm_Name"].str.strip()
+        _pccf_df["Community"] = _pccf_df["Comm_Name"].str.replace("-"," ").str.title()
+        _pccf_df["CSDname"] = _pccf_df["CSDname"].str.strip()
+        # lat/lon as floating point (N type in record layout)
+        _pccf_df["LAT"] = _pccf_df["LAT"].astype(float)
+        _pccf_df["LONG"] = _pccf_df["LONG"].astype(float)
+        if not cachefile is None:
+            d = dict(_pccf_df=_pccf_df, _rldf=_rldf)
+            with open(cachefile, "wb") as fh:
+                pickle.dump(d, fh)
 
 def filter_pc(province_filter=None, keep_first_pc=True, drop_da0=True):
     """Remove items from PCCF data frame."""
