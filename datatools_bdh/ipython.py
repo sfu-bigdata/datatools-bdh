@@ -1,7 +1,7 @@
 """ IPython/Jupyter tools
 """
 
-from IPython.display import display, Markdown, HTML
+from IPython.display import display, Markdown, HTML, clear_output
 from IPython.core.magic import register_line_magic
 import tabulate
 import io
@@ -12,6 +12,15 @@ from .data_uri import bytes_to_uri
 def displaymd(strmd):
     """Display Markdown in notebook"""
     display(Markdown(strmd))
+
+__out = None
+
+def out():
+    from ipywidgets import Output
+    global __out
+    if __out is None:
+        __out = Output()
+    return __out
 
 # ---------------------------------------------------------------------------
 # rendering to bytes buffer, PIL image and HTML image via data URI
@@ -101,8 +110,14 @@ def dataframe_uri(df):
     """Render formatted dataframe HTML to png and return as data URI"""
     return render_bytes_to_uri(dataframe_to_bytes(df))
 
-def display_df_image(df):
-    displaymd(f"![]({dataframe_uri(df)})")
+def display_df_image(df, no_warnings=True):
+    if no_warnings:
+        with out():
+            uri = dataframe_uri(df)
+            clear_output(wait=True)
+    else:
+        uri = dataframe_uri(df)
+    displaymd(f"![]({uri})")
 
 # ---------------------------------------------------------------------------
 def conda_bin_path_fix():
@@ -234,12 +249,21 @@ class Capturing(list):
         sys.stdout = self._stringio = StringIO()
         self._stderr = sys.stderr
         sys.stderr = self._stringioe = StringIO()
+        self._displayhook = sys.displayhook
+        sys.displayhook = lambda x: None
+        self._excepthook = sys.excepthook
+        self.__excepthook = sys.__excepthook__
+        sys.excepthook = lambda type, value, traceback: None
+        sys.__excepthook__ = lambda type, value, traceback: None
         return self
     def __exit__(self, *args):
         self.extend(self._stringio.getvalue().splitlines())
         self.extend(self._stringioe.getvalue().splitlines())
         sys.stdout = self._stdout
         sys.stderr = self._stderr
+        sys.displayhook = self._displayhook
+        sys.excepthook = self._excepthook
+        sys.__excepthook__ = self.__excepthook
         del self._stringio    # free up some memory
         del self._stringioe
 

@@ -17,9 +17,9 @@ The modules in this package mostly provide additional helper functions to work w
 
 It is possible to install this package directly from its public github location:
 
-`pip install git+https://github.com/sfu-bigdata/datatools-bdh/tree/main/datatools_bdh`
+`pip install git+https://github.com/sfu-bigdata/datatools-bdh`
 
-Alternatively, you can clone the repo and install locally:
+Alternatively, one can clone the repo and install locally:
 ```
 git clone https://github.com/sfu-bigdata/datatools-bdh/tree/main/datatools_bdh
 cd datatools_bdh

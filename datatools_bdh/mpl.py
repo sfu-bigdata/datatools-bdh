@@ -8,10 +8,26 @@ from .ipython import render_uri
 import io
 
 def get_axis_bounds(ax=None):
-    """Obtain bounds of axis in format compatible with ipyleaflet"""
+    """Obtain bounds of axis in format compatible with ipyleaflet
+    Returns:
+        bounds np.array with lat and lon bounds.
+        bounds.tolist() gives [[s, w],[n, e]]
+    """
     if ax is None:
         ax = plt.gca()
     return np.array([ax.get_ylim(), ax.get_xlim()]).T
+
+def translate_latlon_bounds(fig_bounds, lon_shift=.9, lat_scale=.7):
+    """Generate bounds for a colorbar to place next to a figure overlay.
+       This is a utility function for ipyleaflet.
+    """
+    cbar_fig_bounds = fig_bounds.copy()
+    cbar_width = cbar_fig_bounds[:,1] @ [-1,1]
+    nb = cbar_fig_bounds[:,1] + cbar_width * lon_shift
+    cbar_height = cbar_fig_bounds[:,0] @ [-1,1]
+    cbar_fig_bounds[:,1] = nb
+    cbar_fig_bounds[0,0] = cbar_fig_bounds[1,0] - cbar_height * lat_scale
+    return cbar_fig_bounds
 
 def set_font(size, family='sans-serif', weight='normal'):
     """Set the global font for matplotlib"""
