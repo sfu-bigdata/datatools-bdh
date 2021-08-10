@@ -84,7 +84,7 @@ def filter_pc(province_filter=None, keep_first_pc=True, drop_da0=True):
         _pccf_df = _pccf_df.groupby('Postal code').first().reset_index()
 
 def get_community_codes(community, field="DAuid"):
-    """Get DA codes for given community or city.
+    """Get geographical region codes for given community or city.
     Args:
         community - city name
         field - "DAuid" or "Postal code" or "FSA"
