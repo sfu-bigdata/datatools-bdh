@@ -46,11 +46,30 @@ def load_file(filename):
 
 # ----------------------------------------------------------------------------
 
-# Python 2 + 3 compatible string type
-try:
-    basestring
-except NameError:
-    basestring = str
+def isiterable(obj):
+    """Check if object `obj` is iterable."""
+    try:
+        iter(obj)
+        return True
+    except TypeError:
+        return False
+
+def ensure_list(items, item_type=str):
+    """Ensure that `items` is a list, i.e. create single-element list if needed.
+       Args:
+        items     - single item or list of items
+        item_type - check if `items` are of this type (default: str). If yes,
+                    insert into a list.
+       Returns:
+        List of item(s)
+       Example:
+        fields = "City"
+        ensure_list(fields) + ["Province"] results in ["City", "Province"]
+    """
+    if isinstance(items, item_type) or not isiterable(items):
+        return [items]
+    else:
+        return items
 
 # ----------------------------------------------------------------------------
 # module reloading

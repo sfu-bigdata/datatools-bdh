@@ -12,6 +12,7 @@ or via
 """
 
 from datatools_bdh import _get_resource_path
+from .utils import ensure_list
 import pandas as pd
 
 _rldf = None
@@ -90,3 +91,13 @@ def get_community_codes(community, field="DAuid"):
         field - "DAuid" or "Postal code" or "FSA"
     """
     return _pccf_df.loc[_pccf_df['Community'] == community, field].unique()
+
+def get_communities_codes(communities, fields=None, community_field='Community'):
+    """From the postal code conversion file, select entries for the `communities`.
+       This function is similar to get_community_codes, but works if
+       `communities` and `fields` are strings or lists of strings.
+    """
+    if not isinstance(communities, pd.DataFrame) and not isinstance(communities, pd.Series):
+        communities = pd.Series(communities, name=community_field)
+    df = _pccf_df.merge(communities, on=community_field)
+    return df if fields is None else df[ensure_list(fields) + [community_field]].drop_duplicates()
