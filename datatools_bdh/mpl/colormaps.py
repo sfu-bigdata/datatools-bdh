@@ -263,7 +263,17 @@ cmaps = {
     "dawn": np.array([ [float(n) for n in l.split(" ")] for l in dawn_txt.split("\n")]),
 }
 
-def get_cmap(cm_name):
+def get_cmap(cm_name, N=None):
+    """Generate a color map from the examples in datatools_bdh.mpl.colormaps
+    Args:
+        cm_name - name of the colormap
+        N - number of entries in the map
+    Returns:
+        Colormap object
+    See also:
+        matplotlib.colors.ListedColormap
+    """
+    name = cm_name
     if cm_name.endswith("_r"):
         cm_name = cm_name[:-2]
         reverse = True
@@ -272,4 +282,4 @@ def get_cmap(cm_name):
     cm_arr = cmaps[cm_name]
     if reverse:
         cm_arr = np.flip(cm_arr, axis=0)
-    return mpl.colors.ListedColormap(cm_arr/255.0)
+    return mpl.colors.ListedColormap(cm_arr/255.0, name=name, N=N)
