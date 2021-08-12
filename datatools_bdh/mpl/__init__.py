@@ -3,7 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import warnings
-from .ipython import render_uri
+from ..ipython import render_uri
+from . import colormaps
 
 # ---------------------------------------------------------------------------
 # Utilites to work with figure/axis bounds
