@@ -46,6 +46,17 @@ def load_file(filename):
 
 # ----------------------------------------------------------------------------
 
+def extend_range(min_max, extend_ratio=.2):
+    """Symmetrically extend the range given by the `min_max` pair.
+       The new range will be 1 + `extend_ratio` larger than the original range.
+    """
+    mme = (min_max[1] - min_max[0]) * extend_ratio / 2
+    return (min_max[0] - mme, min_max[1] + mme)
+
+def isnumber(n):
+    import numbers
+    return isinstance(n, numbers.Number)
+
 def isiterable(obj):
     """Check if object `obj` is iterable."""
     try:

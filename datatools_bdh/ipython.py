@@ -235,6 +235,8 @@ def make_html_table(table):
     return tabulate.tabulate(table, tablefmt='unsafehtml')
 
 # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
 # Capture warnings (python generic, not ipython related)
 
 from io import StringIO 

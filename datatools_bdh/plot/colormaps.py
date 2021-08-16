@@ -264,7 +264,7 @@ cmaps = {
 }
 
 def get_cmap(cm_name, N=None):
-    """Generate a color map from the examples in datatools_bdh.mpl.colormaps
+    """Generate a color map from the examples in datatools_bdh.plot.colormaps
     Args:
         cm_name - name of the colormap
         N - number of entries in the map
@@ -283,3 +283,25 @@ def get_cmap(cm_name, N=None):
     if reverse:
         cm_arr = np.flip(cm_arr, axis=0)
     return mpl.colors.ListedColormap(cm_arr/255.0, name=name, N=N)
+
+def alpha_from_max(imrgba, invert=True, alpha_amp_th=30):
+    """Transform the alpha channel of the rgba data, e.g. to select visible parts of map overlay.
+       Alpha is determined based on the maximum of the RGB values for each pixel.
+       Any pre-existing alpha values are overwritten.
+    Args:
+        imrgba - numpy array of size (number of pixels) x (number of channels, i.e. 4 for RGBA)
+        invert - if True (default), use 255 - the alpha based on max. channel value, 
+                 i.e. black will be visible, white transparent. Using False inverts that.
+        alpha_amp_th - if determined alpha is above this threshold set it to 255 (max visibility)
+    Returns:
+        imrgba array with updated alpha channel
+    Depends on optional requirements:
+        geopandas, PIL, contextily
+    """
+    bbialpha = imrgba[:,:3].max(axis=1)
+    if invert:
+        bbialpha = 255 - bbialpha
+    if alpha_amp_th is not None:
+        bbialpha[bbialpha>alpha_amp_th] = 255
+    imrgba[:,3] = bbialpha
+    return imrgba

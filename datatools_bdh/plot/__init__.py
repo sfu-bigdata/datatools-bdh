@@ -2,9 +2,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+
 import warnings
 from ..ipython import render_uri
-from . import colormaps
+from .maps import *
 
 # ---------------------------------------------------------------------------
 # Utilites to work with figure/axis bounds
@@ -58,15 +59,15 @@ def translate_latlon_bounds(fig_bounds, lon_shift=.9, lat_shift=.7, aspect=.7, s
     #cbar_fig_bounds[1,:] = cbar_fig_bounds[0,:] + cbar_hw * scale
     return cbar_fig_bounds
 
+# ---------------------------------------------------------------------------
+# Generic utility functions
+
 def set_font(size, family='sans-serif', weight='normal'):
     """Set the global font for matplotlib"""
     font = {'family' : family,
             'weight' : weight,
             'size'   : size}
     mpl.rc('font', **font)
-
-# ---------------------------------------------------------------------------
-# Generic utility functions
 
 def set_xticklabels_nowarn(ax, xticks=None, autoscale=1000, suffix="k"):
     """Adjust xticklabels to abbreviated multiples of 1000 (or value of autoscale)"""
@@ -82,3 +83,10 @@ def savefig_uri(**kwargs):
     """
     plt_savefig = lambda buf: plt.savefig(buf, **kwargs)
     return render_uri(plt_savefig, format=kwargs.get('format', 'png'))
+
+def set_plot_frame_visible(onoff=True):
+    ax = plt.gca()
+    ax.spines["top"].set_visible(onoff)
+    ax.spines["right"].set_visible(onoff)
+    ax.spines["bottom"].set_visible(onoff)
+    ax.spines["left"].set_visible(onoff)
