@@ -76,6 +76,14 @@ def set_xticklabels_nowarn(ax, xticks=None, autoscale=1000, suffix="k"):
     with warnings.catch_warnings(record=True) as w:
         ax.set_xticklabels(xticks)
 
+@mpl.ticker.FuncFormatter
+def thousands_k_fmt(x, pos):
+    return f"{x/1000:,.0f}k"
+
+@mpl.ticker.FuncFormatter
+def percent_fmt(x, pos):
+    return f"{x*100:.0f}%"
+
 def savefig_uri(**kwargs):
     """Save current figure into data URI.
        Example: savefig_uri(format='png', transparent=True)

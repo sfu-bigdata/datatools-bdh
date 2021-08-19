@@ -106,7 +106,7 @@ def filter_triangles(x, y, k=DEFAULT_TRI_FILTER_K):
         results.append(is_triangle_too_big(x[i], y[i], k))
     return np.array(results)
 
-def plot_tripcolor(df, field_name, cmap="rocket", filter_triangles=None, ax=None):
+def plot_tripcolor(df, field_name, cmap="rocket", filter_triangles_k=None, ax=None, **kwargs):
     """Use matplotlib.pyplot.tripcolor to visualize scalar quantity on a map.
     """
     if ax is None:
@@ -119,10 +119,10 @@ def plot_tripcolor(df, field_name, cmap="rocket", filter_triangles=None, ax=None
 
     triang = tri.Triangulation(x, y)
 
-    if not filter_triangles is None:
-        k = filter_triangles if isnumber(filter_triangles) else DEFAULT_TRI_FILTER_K
+    if not filter_triangles_k is None:
+        k = filter_triangles_k if isnumber(filter_triangles_k) else DEFAULT_TRI_FILTER_K
         triang.set_mask(filter_triangles(x[triang.triangles], y[triang.triangles]))
-    g = ax.tripcolor(triang, z, alpha=.8, shading='flat', edgecolor=None, linewidth=0, cmap=cmap, antialiased=True)
+    g = ax.tripcolor(triang, z, alpha=.8, shading='flat', edgecolor=None, linewidth=0, cmap=cmap, antialiased=True, **kwargs)
 #    plt.axis('off')
 
     return g
