@@ -2,7 +2,7 @@
    some given distribution and obey constraints.
 
    For instance, to draw 100 samples from a Normal distribution that fall
-   within the bounds [-.5, .5] call:
+   within the bounds [-.5, .5] via rejection sampling call:
    ```
     lub = .5
     nsamples = 100
@@ -17,17 +17,20 @@
    ```
 """
 
-import scipy.stats as sps
 import pandas as pd
 import numpy as np
+
+from sklearn.utils import Bunch
+
+from scipy.stats import exponpow as _exponpow
 
 # ---------------------------------------------------------------------------
 # Inverse transform sampling
 
-class ITFSampler:
-    """Instantiate this class via make sampler"""
+class ITFSampler(Bunch):
+    """Inverse transform sampling"""
     def __init__(self,
-                distribution=sps.exponpow,
+                distribution=_exponpow,
                 cdf_miniv=0.01,
                 cdf_nsteps=100,
                 **kwargs
@@ -42,10 +45,18 @@ class ITFSampler:
         self.x0 = np.linspace(self.cdf_lb, self.cdf_ub, self.cdf_nsteps)
         self.xs = pd.DataFrame(self.distribution.cdf(self.x, **kwargs))
         self.xsi = self.xs.reset_index().set_index(0)['index']
+        for k in set(kwargs) - set(locals()):
+            self[k] = kwargs[k]
 
     def __call__(self, y):
-        return (self.xsi.reindex(np.atleast_1d(y), method='ffill', fill_value=0)
-                / self.cdf_nsteps * (self.cdf_ub - self.cdf_lb) + self.cdf_lb)
+        y = np.atleast_1d(y)
+        return (
+            self.xsi.reindex(self.xsi.index.union(y), 
+                             # method='ffill',
+                             #fill_value=0
+                             ).interpolate(method='linear')
+                             .reindex(y)
+                    / self.cdf_nsteps * (self.cdf_ub - self.cdf_lb) + self.cdf_lb)
         # TODO check if this should be divided by (cdf_nsteps-1) instead of cdf_nsteps
         # to enable reaching the upper bound
 
@@ -61,7 +72,7 @@ def make_sample_constrained(in_sample,
                             draw_sample, nsamples, oversample=1,
                             sample_constraint_rate=SAMPLE_CONSTRAINT_RATE,
                             unsorted=False):
-    """Draw a number samples from a distribution with constraints.
+    """Draw a number samples from a distribution with constraints, via rejection sampling.
 
     Args:
         in_sample   - function that determines whether the value in its argument
