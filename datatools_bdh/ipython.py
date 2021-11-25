@@ -13,6 +13,24 @@ def displaymd(strmd):
     """Display Markdown in notebook"""
     display(Markdown(strmd))
 
+def display_html(arg):
+    display(HTML(arg))
+
+def html_img(ipath, widthpx=120):
+    return f'<img width="{widthpx}px" src="{ipath}"/>'
+
+def show_image(ipath, widthpx=120):
+    display_html(html_img(ipath, widthpx))
+
+def html_table(*rows):
+    """`rows` should be a list of lists of cell contents for the table"""
+    if rows:
+        return ("<table><tr><td>" + 
+                "</td></tr><tr><td>".join("</td><td>".join(items) for items in rows)
+                + "</td></tr></table>")
+    else:
+        return ""
+
 __out = None
 
 def out():
