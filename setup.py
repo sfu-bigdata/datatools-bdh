@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='datatools_bdh',
       version='0.1',
@@ -7,6 +7,6 @@ setup(name='datatools_bdh',
       author='Steven Bergner',
       author_email='bdi-consulting@sfu.ca',
       license='MIT',
-      packages=['datatools_bdh'],
+      packages=find_packages(),
       package_data={'': ['*.csv']},
       zip_safe=False)
