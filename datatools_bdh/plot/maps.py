@@ -10,7 +10,6 @@ import math
 try:
     # basemap related, tolerate if these imports are missing
     import geopandas
-    import contextily
     from PIL import Image as PILImage
 except ModuleNotFoundError:
     pass
@@ -43,7 +42,7 @@ def get_aspect_latlon(lalo):
 # ---------------------------------------------------------------------------
 # static basemap rendering
 
-def add_basemap(extent_wesn=None, zoom='auto', source=contextily.providers.Stamen.TonerLite, 
+def add_basemap(extent_wesn=None, zoom='auto', source='none', 
                 ax=None, zorder=100, alpha_tf=alpha_from_max, extend_ratio=.1, **kwargs):
     """Add a basemap with selective transparency to place on top of existing figure.
     Args:
@@ -61,6 +60,9 @@ def add_basemap(extent_wesn=None, zoom='auto', source=contextily.providers.Stame
     Returns:
         AxesImage output of matplotlib.pyplot.imshow
     """
+    import contextily
+    if source == 'none':
+        source = contextily.providers.Stamen.TonerLite
     auto_extent = extent_wesn is None or isnumber(extent_wesn)
     if ax is None:
         ax = plt.gca()
