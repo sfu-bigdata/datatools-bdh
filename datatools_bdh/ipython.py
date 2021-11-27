@@ -22,7 +22,7 @@ def html_img(ipath, widthpx=120):
 def show_image(ipath, widthpx=120):
     display_html(html_img(ipath, widthpx))
 
-def html_table(*rows):
+def html_table(rows):
     """`rows` should be a list of lists of cell contents for the table"""
     if rows:
         return ("<table><tr><td>" + 
