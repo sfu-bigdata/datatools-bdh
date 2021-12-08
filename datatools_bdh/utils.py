@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 import importlib
+import uuid
 
 # ----------------------------------------------------------------------------
 # file path management
@@ -43,6 +44,9 @@ def load_file(filename):
     """
     with open(filename, "r") as fh:
         return fh.read()
+
+def gen_filename():
+    return str(uuid.uuid4().hex)
 
 # ----------------------------------------------------------------------------
 

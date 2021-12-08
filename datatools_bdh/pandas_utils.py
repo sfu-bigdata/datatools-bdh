@@ -3,8 +3,103 @@
 import pandas as pd
 from bisect import bisect_left
 import datetime
+import os
+
+from .utils import gen_filename
+from .data_uri import bytes_to_uri
+from .ipython import HTML
 
 # ---------------------------------------------------------------------------
+# dataframe to SVG conversion via command line tools
+
+def make_table_html(df, title=''):
+    '''
+    Write an entire dataframe to an HTML string with nice formatting.
+    '''
+
+    result = '''
+<html>
+<head>
+<style>
+    h2 {
+        text-align: center;
+        font-family: sans-serif;
+    }
+    table { 
+        margin-left: auto;
+        margin-right: auto;
+    }
+    table, th, td {
+        #font-family: sans-serif;
+        #border: 1px solid black;
+        #border-collapse: collapse;
+    }
+    th, td {
+        text-align: left;
+        font-family: monospace;
+        font-size:10;
+        padding: 0 2px;
+    thead tr {
+        font-family: sans-serif;
+        text-align: center;
+    }
+    .wide {
+        width: 90%; 
+    }
+
+</style>
+</head>
+<body>
+    '''
+    #-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue", sans-serif
+    result += '<h2> %s </h2>' % title
+    if type(df) == pd.io.formats.style.Styler:
+        result += df.render()
+    else:
+        result += df.to_html(classes='wide', escape=False)
+    result += '''
+</body>
+</html>
+'''
+    return result
+
+def write_to_html_file(df_sl, filename='out.html'):
+    result = make_table_html(df_sl)
+    with open(filename, 'w', encoding='utf-8') as f:
+        f.write(result)
+
+def make_df_svg_uri(df_sl, fnhead, show_errors=False):
+    """Display a dataframe as formatted HTML and capture as SVG in URI form.
+    The URI can be used in an <img> tag to display the dataframe as SVG."""
+    fnbase = f"{fnhead}_{gen_filename()}"
+    outfile = f'{fnbase}.html'
+    pdffile = f'{fnbase}.pdf'
+    svgfile = f'{fnbase}.svg'
+    write_to_html_file(df_sl, filename=outfile)
+    #--disable-smart-shrinking 
+    # --page-width 8in --page-height 11in\
+    if show_errors:
+        debug_err = ''
+        debug_std = ''
+    else:
+        debug_err = '2> /dev/null'
+        debug_std = '> /dev/null'
+
+    os.system(f"wkhtmltopdf --dpi 120 -T 0 -B 0 -L 0 -R 0 --encoding utf-8 --custom-header 'meta' 'charset=utf-8' "
+              f"{outfile} {pdffile} {debug_err}")
+    os.system(f"pdfcrop {pdffile} {debug_std}")
+    os.system(f"inkscape -l {svgfile} --export-area-drawing --vacuum-defs {pdffile}")
+    # os.system(f"pdf2svg {pdffile.replace('.pdf','-crop.pdf')} {svgfile}")
+    os.system("sleep .5")
+    dat_uri = bytes_to_uri(open(svgfile,'rb').read(), imgtype='svg+xml')
+    os.system(f"rm -f {fnbase}*")
+    return dat_uri
+
+def dataframe_svg_html(df_sl, width="90%"):
+    dat_uri = make_df_svg_uri(df_sl, fnhead='sl_table')
+    return HTML(f"<img src='{dat_uri}' width={width}/>")
+
+#----------------------------------------------------------------------------
 
 def index_columns(df, none_name=None):
     """Return list of column names that form the (multi-)index or None, if index is a single unnamed

@@ -204,6 +204,33 @@ def spark_string(ints, fit_min=False):
     step = (step_range / float(len(ticks) - 1)) or 1
     return u''.join(ticks[int(round((i - min_range) / step))] for i in ints)
 
+def sparkline_str(x, bins=10, ridx=None, col=None):
+    """Make a grouped sparkline.
+    If input `x` has 24 entries, an hourly division will be returned, e.g.
+    |▁▁|▂▃▄|▅▆|▇█|, schematically, with interval dividers separating 
+    0-6, 6-12, 12-15, 15-18, 18-22, 22-24. 
+    Args:
+    x - int array indicating bar heights
+    bins - 
+    """
+    if col is None:
+        all_span = lambda x: x
+    else:
+        def all_span(lst):
+            return [f'<span style="color:{col}">{sl}</span>' for sl in lst]
+    heights = x.fillna(0)
+    if not ridx is None:
+        heights = heights.reindex(ridx, fill_value=0)
+    if bins == 24:
+        sl = ''.join(spark_string(heights))
+        sl = '|'.join(all_span([sl[:6], sl[6:12], sl[12:16], sl[16:19], sl[19:22], sl[22:]]))
+    elif bins == 30:
+        sl = '|' + ''.join(all_span([spark_string(heights)])[0]) + '|'
+    else:
+        sl = '|' + ''.join(all_span(spark_string(heights))) + '|'
+    return sl
+sparkline_str.__name__ = "sparkline"
+
 # ---------------------------------------------------------------------------
 # table display
 
@@ -251,6 +278,17 @@ def make_html_table(table):
         generated safely.
     """
     return tabulate.tabulate(table, tablefmt='unsafehtml')
+
+def display_pretty_html(htmlsrc, wrap_body=False):
+    """Display syntax highlighted, pretty printed HTML in IPython/Jupyter"""
+    from lxml import etree, html
+    from IPython.display import Code
+    from pygments.formatters import HtmlFormatter
+    from IPython.core.display import HTML
+    formatter = HtmlFormatter()
+    display(HTML(f'<style>{ formatter.get_style_defs(".highlight") }</style>')) 
+    document_root = html.fromstring(f"<html><body>{htmlsrc}</body></html>" if wrap_body else htmlsrc)
+    display(Code(etree.tostring(document_root, encoding='unicode', pretty_print=True), language='html'))
 
 # ---------------------------------------------------------------------------
 
