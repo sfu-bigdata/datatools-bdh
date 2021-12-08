@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 
 import warnings
-from ..ipython import render_uri, render_bytes, display
+from ..ipython import render_uri, render_bytes, display, HTML
 from .maps import *
 
 # ---------------------------------------------------------------------------
@@ -87,13 +87,27 @@ def percent_fmt(x, pos):
 def savefig_to_buffer(fig, **kwargs):
     return render_bytes(lambda buf: fig.savefig(buf, **kwargs))
 
+imgtypes = {'svg':'svg+xml'}
+def get_imgtype(ext):
+    """Get mime imgtype for given extension `ext`"""
+    return imgtypes.get(ext.lower(), ext)
+
 def savefig_uri(**kwargs):
     """Save current figure into data URI.
        Example: savefig_uri(format='png', transparent=True)
        See also: render_uri()
     """
     plt_savefig = lambda buf: plt.savefig(buf, **kwargs)
-    return render_uri(plt_savefig, format=kwargs.get('format', 'png'))
+    return render_uri(plt_savefig,
+                      format=get_imgtype(kwargs.get('format', 'png')))
+
+def plot_show_svg_html(width="90%", do_close=True):
+    """Capture plot as SVG and display as HTML img with display `width` control.
+    """
+    figuri = savefig_uri(format='svg')
+    if do_close:
+        plt.close()
+    return HTML(f"<img src='{figuri}' width={width}/>")
 
 def set_plot_frame_visible(onoff=True):
     ax = plt.gca()
