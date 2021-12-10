@@ -283,6 +283,9 @@ def show_table_matrix(cells, colors=None,
     if return_img:
         return img
 
+# -------------------------------------------------------------------
+# colormap display
+
 def set_bg_col(s):
     """Set background color in pandas dataframe style.
     See also: `display_color_column`"""
@@ -306,3 +309,46 @@ def make_cmap_df(cmap, hex=False):
     if hex:
         cmap_df = cmap_df.assign(color=lambda x: x.apply(mpl.colors.rgb2hex, axis=1))
     return cmap_df
+
+# ------------------------------------------------------------------
+# barh helpers
+
+def plt_annotate_barh(ax, labelfmt="{:.1f}"):
+    """Annotate pyplot barh plot
+    """
+    rects = ax.patches
+    # For each bar: Place a label
+    for rect in rects:
+        # Get X and Y placement of label from rect.
+        x_value = rect.get_width()
+        y_value = rect.get_y() + rect.get_height() / 2
+
+        # Number of points between bar and label. Change to your liking.
+        space = 5
+        # Vertical alignment for positive values
+        ha = 'left'
+
+        # If value of bar is negative: Place label left of bar
+        if x_value < 0:
+            # Invert space to place label to the left
+            space *= -1
+            # Horizontally align label at right
+            ha = 'right'
+
+        # Use X value as label and format number with one decimal place
+        label = labelfmt.format(x_value)
+
+        # Create annotation
+        plt.annotate(
+            label,                      # Use `label` as label
+            (x_value, y_value),         # Place label at end of the bar
+            xytext=(space, 0),          # Horizontally shift label by `space`
+            textcoords="offset points", # Interpret `xytext` as offset in points
+            va='center',                # Vertically center label
+            ha=ha)                      # Horizontally align label differently for
+                                        # positive and negative values.
+
+def render_barh(y, width, xlabel, labelfmt="{:.1f}", **kwargs):
+    ax = plt.barh(y=y, width=width, **kwargs)
+    plt_annotate_barh(ax, labelfmt=labelfmt)
+    plt.xlabel(xlabel);

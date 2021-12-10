@@ -4,10 +4,30 @@ import pandas as pd
 from bisect import bisect_left
 import datetime
 import os
+import re
 
 from .utils import gen_filename
 from .data_uri import bytes_to_uri
 from .ipython import HTML
+
+# ---------------------------------------------------------------------------
+
+def tabulate_list(lst):
+    """Show list content as unescaped HTML table."""
+    return HTML(
+        pd.DataFrame(lst)
+         .style
+         .hide_index()
+         .set_table_styles([{'selector': 'thead', 
+                             'props': [('display', 'none')]}])
+         .render(escape=False))
+
+def markdown_to_html(non_p_string) -> str:
+    ''' Strip enclosing paragraph marks, <p> ... </p>, 
+        which markdown() forces, and which interfere with some jinja2 layout
+    '''
+    from markdown import markdown as markdown_to_html_with_p
+    return re.sub("(^<P>|</P>$)", "", markdown_to_html_with_p(non_p_string), flags=re.IGNORECASE)
 
 # ---------------------------------------------------------------------------
 # dataframe to SVG conversion via command line tools

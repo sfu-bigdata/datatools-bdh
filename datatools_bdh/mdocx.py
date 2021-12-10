@@ -142,6 +142,25 @@ class PythonDocxRenderer(mistune.renderers.BaseRenderer):
         return ''.join(data)
 
 # ----------------------------------------------------------------------------
+
+from docx import Document
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from docx.opc.part import Part
+from docx.opc.constants import RELATIONSHIP_TYPE as RT
+
+def add_alt_chunk(doc: Document, html: str):
+    """Add HTML chunk to word document `doc`"""
+    # per https://stackoverflow.com/q/55041766/15377900
+    package = doc.part.package
+    partname = package.next_partname('/word/altChunk%d.html')
+    alt_part = Part(partname, 'text/html', html.encode(), package)
+    r_id = doc.part.relate_to(alt_part, RT.A_F_CHUNK)
+    alt_chunk = OxmlElement('w:altChunk')
+    alt_chunk.set(qn('r:id'), r_id)
+    doc.element.body.sectPr.addprevious(alt_chunk)
+
+# ----------------------------------------------------------------------------
 class MarkdownDocumentBase:
     """Keep markdown source text in member variable T and render to docx before saving."""
 
