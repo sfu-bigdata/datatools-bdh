@@ -88,9 +88,12 @@ def write_to_html_file(df_sl, filename='out.html'):
     with open(filename, 'w', encoding='utf-8') as f:
         f.write(result)
 
-def make_df_svg_uri(df_sl, fnhead, show_errors=False):
+def make_df_svg_uri(df_sl, fnhead, show_errors=False,
+                    do_remove_files=True,
+                    do_optimize_svg=False):
     """Display a dataframe as formatted HTML and capture as SVG in URI form.
-    The URI can be used in an <img> tag to display the dataframe as SVG."""
+    The URI can be used in an <img> tag to display the dataframe as SVG.
+    """
     fnbase = f"{fnhead}_{gen_filename()}"
     outfile = f'{fnbase}.html'
     pdffile = f'{fnbase}.pdf'
@@ -111,8 +114,11 @@ def make_df_svg_uri(df_sl, fnhead, show_errors=False):
     os.system(f"inkscape -l {svgfile} --export-area-drawing --vacuum-defs {pdffile}")
     # os.system(f"pdf2svg {pdffile.replace('.pdf','-crop.pdf')} {svgfile}")
     os.system("sleep .5")
+    if do_optimize_svg:
+        os.system(f"svgo {svgfile} {debug_std}")
     dat_uri = bytes_to_uri(open(svgfile,'rb').read(), imgtype='svg+xml')
-    os.system(f"rm -f {fnbase}*")
+    if do_remove_files:
+        os.system(f"rm -f {fnbase}*")
     return dat_uri
 
 def dataframe_svg_html(df_sl, width="90%"):

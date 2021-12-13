@@ -7,6 +7,47 @@ import copy
 import yaml
 
 # ----------------------------------------------------------------------------
+
+def deep_convert_list_dict(d, skip_list_level=0):
+    """In nested dict `d` convert all lists into dictionaries.
+    Args:
+        skip_list_level - top-n nested list levels to ignore for 
+                          dict conversion
+    """
+    if isinstance(d, str):
+        return d
+    try:
+        for k,v in d.items():
+            d[k] = deep_convert_list_dict(v, skip_list_level=skip_list_level)
+    except AttributeError:
+        if skip_list_level:
+            skip_list_level -= 1
+            for k,v in enumerate(d):
+                d[k] = deep_convert_list_dict(v, skip_list_level=skip_list_level)
+        else:
+            dd = {}
+            try:
+                for k,v in enumerate(d):
+                    dd[str(k)] = deep_convert_list_dict(v, skip_list_level=skip_list_level)
+                return dd
+            except:
+                raise
+    except TypeError:
+        pass
+    return d
+
+def xml_dict(xml, skip_list_level=0):
+    """Parse `xml` source and return a nested dictionary.
+    Since pandas.json_normalize has special treatment for nested lists, 
+    it is possible to control how many levels of nested lists are ignored before
+    recursively converting lists into dicts.
+    """
+    import xmltodict
+    return deep_convert_list_dict(
+                xmltodict.parse(xml, dict_constructor=dict),
+                skip_list_level=skip_list_level)
+
+# ----------------------------------------------------------------------------
 # manipulate class objects
 
 def set_class_dict(cls, clsdict):

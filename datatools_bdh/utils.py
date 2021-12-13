@@ -48,6 +48,17 @@ def load_file(filename):
 def gen_filename():
     return str(uuid.uuid4().hex)
 
+def gdown_bytes(id, quiet=True):
+    """Download a publicly shared file on google drive into BytesIO. """
+    import gdown
+    import io
+    buf = io.BytesIO()
+    gdown.download(f"https://drive.google.com/uc?id={id}",
+                buf,
+                quiet=quiet)
+    buf.seek(0)
+    return buf.read()
+
 # ----------------------------------------------------------------------------
 
 def extend_range(min_max, extend_ratio=.2):

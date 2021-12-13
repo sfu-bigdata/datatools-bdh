@@ -348,7 +348,8 @@ def plt_annotate_barh(ax, labelfmt="{:.1f}"):
             ha=ha)                      # Horizontally align label differently for
                                         # positive and negative values.
 
-def render_barh(y, width, xlabel, labelfmt="{:.1f}", **kwargs):
+def render_barh(y, width, xlabel=None, labelfmt="{:.1f}", **kwargs):
     ax = plt.barh(y=y, width=width, **kwargs)
     plt_annotate_barh(ax, labelfmt=labelfmt)
-    plt.xlabel(xlabel);
+    if not xlabel is None:
+        plt.xlabel(xlabel)
