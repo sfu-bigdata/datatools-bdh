@@ -3,3 +3,4 @@ from datatools_bdh.plot import *
 import datatools_bdh.pccf as pccf
 from datatools_bdh.utils import *
 from .pandas_utils import *
+from .dict_utils import *
