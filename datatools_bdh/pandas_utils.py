@@ -1,6 +1,7 @@
 """Pandas utilities for DataFrames, Series, etc. """
 
 import pandas as pd
+import numpy as np
 from bisect import bisect_left
 import datetime
 import os
@@ -124,6 +125,17 @@ def make_df_svg_uri(df_sl, fnhead, show_errors=False,
 def dataframe_svg_html(df_sl, width="90%"):
     dat_uri = make_df_svg_uri(df_sl, fnhead='sl_table')
     return HTML(f"<img src='{dat_uri}' width={width}/>")
+
+def hide_repeated_cells(x):
+    """Hide values that are the same as the row above"""
+    c1='visibility:hidden'
+    c2=''
+    cond = x.iloc[:-1,:].values == x.iloc[1:,:].values
+    cr = cond[0].copy()
+    cr[:] = False
+    cond = np.vstack([cr,cond])
+    df1 = pd.DataFrame(np.where(cond,c1,c2),columns=x.columns,index=x.index)
+    return df1
 
 #----------------------------------------------------------------------------
 
