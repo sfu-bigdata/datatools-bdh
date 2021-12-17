@@ -57,7 +57,11 @@ def gdown_bytes(id, quiet=True):
                 buf,
                 quiet=quiet)
     buf.seek(0)
-    return buf.read()
+    return buf
+
+def gdown_str(id, quiet=True, encoding='utf-8'):
+    """Download a publicly shared file on google drive into string object. """    
+    return gdown_bytes(id, quiet).read().decode(encoding)
 
 # ----------------------------------------------------------------------------
 
