@@ -10,7 +10,6 @@ import math
 try:
     # basemap related, tolerate if these imports are missing
     import geopandas
-    from PIL import Image as PILImage
 except ModuleNotFoundError:
     pass
 
@@ -60,6 +59,7 @@ def add_basemap(extent_wesn=None, zoom='auto', source='none',
     Returns:
         AxesImage output of matplotlib.pyplot.imshow
     """
+    from PIL import Image as PILImage
     import contextily
     if source == 'none':
         source = contextily.providers.Stamen.TonerLite

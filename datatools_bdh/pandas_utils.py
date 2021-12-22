@@ -112,7 +112,9 @@ def make_df_svg_uri(df_sl, fnhead, show_errors=False,
     os.system(f"wkhtmltopdf --dpi 120 -T 0 -B 0 -L 0 -R 0 --encoding utf-8 --custom-header 'meta' 'charset=utf-8' "
               f"{outfile} {pdffile} {debug_err}")
     os.system(f"pdfcrop {pdffile} {debug_std}")
-    os.system(f"inkscape -l {svgfile} --export-area-drawing --vacuum-defs {pdffile}")
+    #os.system(f"inkscape -l {svgfile} --export-area-drawing --vacuum-defs {pdffile}")
+    os.system(f"inkscape {pdffile.replace('.pdf','-crop.pdf')} --vacuum-defs --export-filename={svgfile} {debug_err}")
+    #os.system(f"inkscape {pdffile} --vacuum-defs --export-filename={svgfile} {debug_err}")
     # os.system(f"pdf2svg {pdffile.replace('.pdf','-crop.pdf')} {svgfile}")
     os.system("sleep .5")
     if do_optimize_svg:
