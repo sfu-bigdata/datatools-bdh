@@ -116,7 +116,7 @@ def make_df_svg_uri(df_sl, fnhead, show_errors=False,
     os.system(f"inkscape {pdffile.replace('.pdf','-crop.pdf')} --vacuum-defs --export-filename={svgfile} {debug_err}")
     #os.system(f"inkscape {pdffile} --vacuum-defs --export-filename={svgfile} {debug_err}")
     # os.system(f"pdf2svg {pdffile.replace('.pdf','-crop.pdf')} {svgfile}")
-    os.system("sleep .5")
+    # os.system("sleep .5")
     if do_optimize_svg:
         os.system(f"svgo {svgfile} {debug_std}")
     dat_uri = bytes_to_uri(open(svgfile,'rb').read(), imgtype='svg+xml')
