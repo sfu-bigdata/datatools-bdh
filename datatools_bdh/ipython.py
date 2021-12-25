@@ -208,7 +208,7 @@ def sparkline_str(x, bins=10, ridx=None, col=None):
     """Make a grouped sparkline.
     If input `x` has 24 entries, an hourly division will be returned, e.g.
     |▁▁|▂▃▄|▅▆|▇█|, schematically, with interval dividers separating 
-    0-6, 6-12, 12-15, 15-18, 18-22, 22-24. 
+    0-6, 6-12, 12-16, 16-19, 19-22, 22-24. 
     Args:
     x - int array indicating bar heights
     bins - 
